@@ -280,8 +280,8 @@ def closer(data: dict, col: int, row: int):
     return True
 
 def main():
-    input  = "E.12\Random5x5_sn.csv"
-    output = "E.12\est.csv"
+    input  = "E12/Random5x5_sn.csv"
+    output = "est.csv"
     data = load_data(input)
     solve(input, output)
     
