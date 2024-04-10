@@ -1,0 +1,12 @@
+name: rand_5x5_sm_no0
+size: 5
+Start: [0, 0]
+Steps: 8
+DOWN
+DOWN
+RIGHT
+RIGHT
+RIGHT
+RIGHT
+DOWN
+DOWN

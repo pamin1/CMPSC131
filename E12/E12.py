@@ -12,6 +12,12 @@ def load_data(fn: str) -> dict:
     start:list[int] = line[2].split(",")
     start[0] = int(start[0])
     start[1] = int(start[1])
+    
+    true_start = start.copy()
+    temp_y = true_start[0]
+    true_start[0] = true_start[1]
+    true_start[1] = temp_y
+    
 
     exits: list[list[int]] = []
     steps: list[str] = []
@@ -46,7 +52,8 @@ def load_data(fn: str) -> dict:
            "steps": steps,
            "curr" : curr,
            "seen" : seen,
-           "inter": most_rec
+           "inter": most_rec,
+           "true_s": true_start
           }
     return out
 
@@ -66,11 +73,13 @@ def save_data(fn: str, data: dict) -> None:
     file.write("[" + x + ", " + y  + "]" + "\n")
 
     # write in steps...
+    step_conv: dict = {"U": "UP", "D": "DOWN", "L": "LEFT", "R": "RIGHT"}
     steps = data.get("steps")
     nums = str(len(steps))
     file.write("Steps: " + nums)
     for i in range(len(steps)):
-        file.write("\n" + steps[i])
+        word = step_conv.get(steps[i])
+        file.write("\n" + word)
     file.close()
 
 # Part 2: Recursive solving
@@ -95,7 +104,7 @@ def can_move(data: dict, col: int, row: int) -> bool:
 
 def solve_helper(data: dict, col: int, row: int) -> None:
     # pull neccessary information:
-    start = data.get("start")
+    start = data.get("true_s")
     choose_exit(data, start)
     final = data.get("final")
     current = [row, col]
@@ -105,7 +114,7 @@ def solve_helper(data: dict, col: int, row: int) -> None:
     hyp_dict: dict = {}
 
     # define moveset:
-    MOVES = [["UP", -1, 0] , ["DOWN", 1, 0] , ["LEFT", 0, -1], ["RIGHT", 0, 1]]
+    MOVES = [["U", -1, 0] , ["D", 1, 0] , ["L", 0, -1], ["R", 0, 1]]
 
     while current != final:
         # pick an arbitrary int value for the current distance to exit
@@ -148,7 +157,7 @@ def solve(input_fn: str, output_fn: str) -> None:
     data = load_data(input_fn)
 
     # get vals to call solve_helper():
-    start = data.get("start")
+    start = data.get("true_s")
     row = start[0]
     col = start[1]
 
@@ -166,47 +175,47 @@ def moves(data: dict, col: int, row: int) -> dict:
     curr_col = col
     hyp_dict: dict = {}
     count = 0
-    MOVES = ["UP", "DOWN", "LEFT", "RIGHT"]
+    MOVES = ["U", "D", "L", "R"]
 
     # iterate through possible moves, check if the possible move is valid
     # then find the distance between that spot and the exit
     # add move-length correspondance to dictionary 
     for i in range(len(MOVES)):
-        if   MOVES[i] == "LEFT":
+        if   MOVES[i] == "L":
             temp_r = curr_row
             temp_c = curr_col - 1
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
                 count += 1
                 l_weight = distance([temp_r, temp_c], exits[0])
-                hyp_dict["LEFT"] = l_weight
+                hyp_dict["L"] = l_weight
 
-        elif MOVES[i] == "RIGHT":
+        elif MOVES[i] == "R":
             temp_r = curr_row
             temp_c = curr_col + 1
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
                 count += 1
                 r_weight = distance([temp_r, temp_c], exits[0])
-                hyp_dict["RIGHT"] = r_weight
+                hyp_dict["R"] = r_weight
 
-        elif MOVES[i] == "UP":
+        elif MOVES[i] == "U":
             temp_r = curr_row - 1
             temp_c = curr_col
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
                 count += 1
                 u_weight = distance([temp_r, temp_c], exits[0])
-                hyp_dict["UP"] = u_weight
+                hyp_dict["U"] = u_weight
 
-        elif MOVES[i] == "DOWN":
+        elif MOVES[i] == "D":
             temp_r = curr_row + 1
             temp_c = curr_col
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
                 count += 1
                 d_weight = distance([temp_r, temp_c], exits[0])
-                hyp_dict["DOWN"] = d_weight
+                hyp_dict["D"] = d_weight
     
     # simultaneously check if the current spot is an "intersection"
     # a.k.a are there multiple paths available
@@ -266,7 +275,12 @@ def choose_exit(data: dict, start: list):
             dist = temp
 
     # add the value to the index and return
-    data["final"] = exits[index]
+    ext = exits[index]
+    temp_y = ext[0]
+    ext[0] = ext[1]
+    ext[1] = temp_y
+
+    data["final"] = ext
     return
 
 def closer(data: dict, col: int, row: int):
@@ -280,9 +294,8 @@ def closer(data: dict, col: int, row: int):
     return True
 
 def main():
-    input  = "E12/Random5x5_sn.csv"
-    output = "est.csv"
-    data = load_data(input)
+    input  = "E12/examples/random_5x5.csv"
+    output = "est.txt"
     solve(input, output)
     
 

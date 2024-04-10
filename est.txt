@@ -1,0 +1,4 @@
+name: Little O
+size: 3
+Start: [0, 2]
+Steps: 0
