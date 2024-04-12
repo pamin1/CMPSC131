@@ -1,0 +1,22 @@
+name: random_7x7_2_loops
+size: 7
+Start: [6, 6]
+Steps: 18
+UP
+UP
+LEFT
+LEFT
+LEFT
+LEFT
+UP
+UP
+UP
+UP
+RIGHT
+RIGHT
+RIGHT
+RIGHT
+DOWN
+DOWN
+LEFT
+LEFT

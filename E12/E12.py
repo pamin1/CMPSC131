@@ -38,7 +38,7 @@ def load_data(fn: str) -> dict:
         for j in range(len(temp)):
             temp[j] = int(temp[j])
         board.append(temp)
-    curr: list = start
+    curr: list = true_start
     seen: list[list] = []
 
     most_rec: list = []
@@ -68,8 +68,6 @@ def load_data(fn: str) -> dict:
            "steps": steps,
            "curr" : curr,
            "seen" : seen,
-           "inter": most_rec,
-           "true_s": true_start,
            "final": ext
           }
     return out
@@ -121,51 +119,50 @@ def can_move(data: dict, col: int, row: int) -> bool:
 
 def solve_helper(data: dict, col: int, row: int) -> None:
     # pull neccessary information:
-    start = data.get("true_s")
+    seen = data.get("seen")
+    steps = data.get("steps")
     curr_row = row
     curr_col = col
     final = data.get("final")
-    current = [row, col]
-    data["curr"] = current
-    hyp_dict: dict = {}
+    current = data.get("curr")
+
 
     # define moveset:
-    MOVES = [["U", -1, 0] , ["D", 1, 0] , ["L", 0, -1], ["R", 0, 1]]
+    MOVES = {"U": [-1, 0] , "D": [1, 0] , "L": [0, -1], "R": [0, 1]}
 
     while current != final:
-        # pick an arbitrary int value for the current distance to exit
-        # arbitrary in case path is not linearly approaching exit
-        curr_hyp = 1000
-
         # define dictionary for possible moves
-        hyp_dict = moves(data, col, row)
-        data["hyps"] = hyp_dict
-        valid = True
-        # for all possible moves, find the best one
-        for i in range(len(MOVES)):
-            if hyp_dict.get(MOVES[i][0], 10000) <= curr_hyp:
-                valid = False
-                index = i 
-                curr_hyp = hyp_dict.get(MOVES[i][0])
+        pos_moves = moves(data, col, row)
+        for i in range(len(pos_moves)):
+            # if we did find some shortest step, we can pair the direction with
+            # the corresponding change in x and y
+            step = pos_moves[i]
+            vector = MOVES.get(step)
+            t_row = curr_row + vector[0]
+            t_col = curr_col + vector[1]
 
-        # we previously tracked the index value of the shortest path step
-        # using this index; if we have no viable option we need to backtrack
-        if valid:
-            backup = backtrack(data)
-            return solve_helper(data, backup[1], backup[0])
+            # now we update the list of steps and spots seen
+            data["steps"] += step
+            data["seen"]  += [[row,col]]
+            data["curr"] = [t_row, t_col]
+
+            # recurse with updated positions and data
+            solve_helper(data, t_col, t_row)
+
+            # update the position to check against base case
+            # return out in this event
+            current = data.get("curr")
+            if current == final:
+                return
         
-        # if we did find some shortest step, we can pair the direction with
-        # the corresponding change in x and y
-        t_row = curr_row + MOVES[index][1]
-        t_col = curr_col + MOVES[index][2]
-
-        # now we update the list of steps and spots seen
-        data["steps"] += [MOVES[index][0]]
-        data["seen"]  += [[row,col]]
-
-        # recurse with updated positions and data
-        return solve_helper(data, t_col, t_row)
-    
+        # if there is no possible move we have hit a dead end
+        # in this case we pop the step to remove the direction
+        # and we add the recently seen spot to the list of seen locations
+        if len(pos_moves) == 0:
+            steps.pop()
+            seen += [[row, col]]
+            return
+        
     # return nothing once exit is reached
     return
 
@@ -175,9 +172,9 @@ def solve(input_fn: str, output_fn: str) -> None:
     data = load_data(input_fn)
 
     # get vals to call solve_helper():
-    start = data.get("true_s")
-    row = start[0]
-    col = start[1]
+    start = data.get("start")
+    row = start[1]
+    col = start[0]
 
     # call solver helper:
     solve_helper(data, col, row)
@@ -186,63 +183,45 @@ def solve(input_fn: str, output_fn: str) -> None:
     save_data(output_fn, data)
 
 # Helper Methods:
-def moves(data: dict, col: int, row: int) -> dict:
+def moves(data: dict, col: int, row: int):
     # pull neccessary information:
-    exits = data.get("final")
     curr_row = row
     curr_col = col
-    hyp_dict: dict = {}
-    count = 0
     MOVES = ["U", "D", "L", "R"]
+    pos_move: list = []
 
     # iterate through possible moves, check if the possible move is valid
-    # then find the distance between that spot and the exit
-    # add move-length correspondance to dictionary 
     for i in range(len(MOVES)):
         if   MOVES[i] == "L":
             temp_r = curr_row
             temp_c = curr_col - 1
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                count += 1
-                l_weight = distance([temp_r, temp_c], exits)
-                hyp_dict["L"] = l_weight
+                pos_move += MOVES[i]
 
         elif MOVES[i] == "R":
             temp_r = curr_row
             temp_c = curr_col + 1
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                count += 1
-                r_weight = distance([temp_r, temp_c], exits)
-                hyp_dict["R"] = r_weight
+                pos_move += MOVES[i]
 
         elif MOVES[i] == "U":
             temp_r = curr_row - 1
             temp_c = curr_col
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                count += 1
-                u_weight = distance([temp_r, temp_c], exits)
-                hyp_dict["U"] = u_weight
+                pos_move += MOVES[i]
 
         elif MOVES[i] == "D":
             temp_r = curr_row + 1
             temp_c = curr_col
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                count += 1
-                d_weight = distance([temp_r, temp_c], exits)
-                hyp_dict["D"] = d_weight
+                pos_move += MOVES[i]
     
-    # simultaneously check if the current spot is an "intersection"
-    # a.k.a are there multiple paths available
-    # works as a "checkpoint" where we can restart from in backtrack()
-    if count >= 2:
-        data["inter"] += [[row, col]]
-    
-    # return our precious values *golum imitation*
-    return hyp_dict
+    # return the list of possible moves
+    return pos_move
 
 def distance(curr: list[int], dest: list[int]) -> int:
     curr_x: int = curr[0]
@@ -254,32 +233,10 @@ def distance(curr: list[int], dest: list[int]) -> int:
     dx: int = dest_x - curr_x
     dy: int = dest_y - curr_y
 
-    hyp = (dx**2 + dy**2) ** 0.5
     # quick mafs to find the shortest distance between a spot and the exit
+    hyp = (dx**2 + dy**2) ** 0.5
+
     return hyp
-
-def backtrack(data: dict) -> None:
-    # pull neccessary information:
-    seen  = data.get("seen")
-    steps = data.get("steps")
-    inter = data.get("inter")
-    
-    # pull the most recent intersection found
-    last = len(inter) - 1
-    checkpoint = inter[last]
-
-    # remove seen seen places up until the most recent intersection
-    i = len(seen) - 1
-    while seen[i] != checkpoint:
-        recent = seen.pop()
-        i -= 1
-    seen.pop()
-    seen.pop()
-    # close the previously taken path
-    seen.append(recent)
-    hyps  = moves(data, checkpoint[1], checkpoint[0])
-    pass
-
 
 def choose_exit(data: dict, start: list):
     # pull neccessary information
@@ -315,7 +272,7 @@ def closer(data: dict, col: int, row: int):
     return True
 
 def main():
-    input  = "E12/examples/random_5x5.csv"
+    input  = "E12/examples/random_9x9.csv"
     output = "est.txt"
     solve(input, output)
     
