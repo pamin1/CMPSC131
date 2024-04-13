@@ -12,36 +12,31 @@ def load_data(fn: str) -> dict:
     start:list[int] = line[2].split(",")
     start[0] = int(start[0])
     start[1] = int(start[1])
-    
-    true_start = start.copy()
-    temp_y = true_start[0]
-    true_start[0] = true_start[1]
-    true_start[1] = temp_y
-    
 
     exits: list[list[int]] = []
     steps: list[str] = []
 
     line1 = line[1].split(",")
+
     size: int = int(line1[0])
     num_exits: int = int(line1[1])
-    if len(line) > 3:
-        for i in range(3, 3 + num_exits):
-            temp = line[i].split(",")
-            for j in range(len(temp)): 
-                temp[j] = int(temp[j])
-            exits.append(temp)
-
+    
     board_start = 3 + num_exits
+    
+    for i in range(3, board_start):
+        temp = line[i].split(",")
+        for j in range(len(temp)): 
+            temp[j] = int(temp[j])
+        exits.append(temp)
+
     for i in range(board_start, len(line)):
         temp = line[i].split(",")
         for j in range(len(temp)):
             temp[j] = int(temp[j])
         board.append(temp)
-    curr: list = true_start
+    
+    curr: list = [start[1], start[0]]
     seen: list[list] = []
-
-    most_rec: list = []
 
     # compare distances from start to exit
     dist = distance(start, exits[0])
@@ -53,11 +48,7 @@ def load_data(fn: str) -> dict:
             index = i
             dist = temp
 
-    # add the value to the index and return
-    ext = exits[index].copy()
-    temp_y = ext[0]
-    ext[0] = ext[1]
-    ext[1] = temp_y
+    ext = [exits[index][1], exits[index][0]]
 
     # create dictionary:
     out = {"name" : name,
@@ -104,10 +95,6 @@ def can_move(data: dict, col: int, row: int) -> bool:
     b_col = data.get("size")
     b_row = data.get("size")
 
-    # check for edge case:
-    if board == []:
-        return False
-    
     # check out of bounds errors:
     if b_col <= col or col < 0 or b_row <= row or row < 0:
         return False
@@ -121,11 +108,8 @@ def solve_helper(data: dict, col: int, row: int) -> None:
     # pull neccessary information:
     seen = data.get("seen")
     steps = data.get("steps")
-    curr_row = row
-    curr_col = col
     final = data.get("final")
     current = data.get("curr")
-
 
     # define moveset:
     MOVES = {"U": [-1, 0] , "D": [1, 0] , "L": [0, -1], "R": [0, 1]}
@@ -138,8 +122,8 @@ def solve_helper(data: dict, col: int, row: int) -> None:
             # the corresponding change in x and y
             step = pos_moves[i]
             vector = MOVES.get(step)
-            t_row = curr_row + vector[0]
-            t_col = curr_col + vector[1]
+            t_row = row + vector[0]
+            t_col = col + vector[1]
 
             # now we update the list of steps and spots seen
             data["steps"] += step
@@ -183,42 +167,40 @@ def solve(input_fn: str, output_fn: str) -> None:
     save_data(output_fn, data)
 
 # Helper Methods:
-def moves(data: dict, col: int, row: int):
+def moves(data: dict, col: int, row: int) -> list:
     # pull neccessary information:
-    curr_row = row
-    curr_col = col
     MOVES = ["U", "D", "L", "R"]
     pos_move: list = []
 
     # iterate through possible moves, check if the possible move is valid
     for i in range(len(MOVES)):
         if   MOVES[i] == "L":
-            temp_r = curr_row
-            temp_c = curr_col - 1
+            temp_r = row
+            temp_c = col - 1
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                pos_move += MOVES[i]
+                pos_move.append(MOVES[i])
 
         elif MOVES[i] == "R":
-            temp_r = curr_row
-            temp_c = curr_col + 1
+            temp_r = row
+            temp_c = col + 1
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                pos_move += MOVES[i]
+                pos_move.append(MOVES[i])
 
         elif MOVES[i] == "U":
-            temp_r = curr_row - 1
-            temp_c = curr_col
+            temp_r = row - 1
+            temp_c = col
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                pos_move += MOVES[i]
+                pos_move.append(MOVES[i])
 
         elif MOVES[i] == "D":
-            temp_r = curr_row + 1
-            temp_c = curr_col
+            temp_r = row + 1
+            temp_c = col
 
             if can_move(data, temp_c, temp_r) and closer(data, temp_c, temp_r):
-                pos_move += MOVES[i]
+                pos_move.append(MOVES[i])
     
     # return the list of possible moves
     return pos_move
@@ -238,30 +220,26 @@ def distance(curr: list[int], dest: list[int]) -> int:
 
     return hyp
 
-def choose_exit(data: dict, start: list):
+def choose_exit(data: dict, start: list) -> None:
     # pull neccessary information
     exits = data.get("exits")
 
     # compare distances from start to exit
     dist = distance(start, exits[0])
-    index = 0
     for i in range(len(exits)):
         temp = distance(start, exits[i])
         if temp < dist:
             # track the index of the closest exit
-            index = i
-            dist = temp
+            lst = exits[i]
 
     # add the value to the index and return
-    ext = exits[index]
-    temp_y = ext[0]
-    ext[0] = ext[1]
-    ext[1] = temp_y
+
+    ext = [lst[1], lst[0]]
 
     data["final"] = ext
     return
 
-def closer(data: dict, col: int, row: int):
+def closer(data: dict, col: int, row: int) -> bool:
     seen  = data.get("seen")
     curr  = [row, col]
 
@@ -273,7 +251,7 @@ def closer(data: dict, col: int, row: int):
 
 def main():
     input  = "E12/examples/random_9x9.csv"
-    output = "est.txt"
+    output = "E12/output.txt"
     solve(input, output)
     
 

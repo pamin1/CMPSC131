@@ -1,22 +1,16 @@
-name: random_7x7_2_loops
-size: 7
-Start: [6, 6]
-Steps: 18
-UP
-UP
-LEFT
-LEFT
-LEFT
-LEFT
-UP
-UP
+name: random_9x9_1
+size: 9
+Start: [0, 6]
+Steps: 12
 UP
 UP
 RIGHT
 RIGHT
+UP
+UP
 RIGHT
 RIGHT
-DOWN
-DOWN
-LEFT
-LEFT
+UP
+UP
+RIGHT
+RIGHT
