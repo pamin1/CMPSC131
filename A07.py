@@ -69,18 +69,18 @@ def sorted_frequencies(str):
     
 
 def main():
-    # print(frequency_analysis("Hello World!"))
-    # print(frequency_analysis("CMPSC-131"))
-    # print(frequency_analysis("Spring is near"))
-    # print(frequency_analysis(["D2", "CT", "HK", "D9", "SK"]))
+    print(frequency_analysis("Hello World!"))
+    print(frequency_analysis("CMPSC-131"))
+    print(frequency_analysis("Spring is near"))
+    print(frequency_analysis(["D2", "CT", "HK", "D9", "SK"]))
     
     print(forward_sort([5,4]))
     print(shaker_sort([7,3,9,2,1]))
 
-    # print(sorted_frequencies("Hello World!"))
-    # print(sorted_frequencies("CMPSC-131"))
-    # print(sorted_frequencies("Spring is near"))
-    # print(sorted_frequencies(""))
+    print(sorted_frequencies("Hello World!"))
+    print(sorted_frequencies("CMPSC-131"))
+    print(sorted_frequencies("Spring is near"))
+    print(sorted_frequencies(""))
 
 if __name__ == "__main__":
     main()
