@@ -57,10 +57,10 @@ def save_data(fn: str, data: list[tuple[float, float, tuple[int,...]]]) -> None:
         for j in range(len(row)):
             # if the element is a tuple, we need to iterate through that on its own
             if isinstance(row[j], tuple):
-                for k in range(len(row[2])):
-                    val = str(row[2][k])
+                for k in range(len(row[j])):
+                    val = str(row[j][k])
                     file.write(val)
-                    if k < len(row[2]) - 1:
+                    if k < len(row[j]) - 1:
                         file.write(",")
 
             # otherwise we can just write in the value 
@@ -126,7 +126,7 @@ def find_mode(lst: list[int]) -> tuple[int, ...]:
 
     # keep a dictionary of the found frequencies
     freqs: dict[int, int] = {}
-    max: list = 0
+    max: int = 0
     tup_out: tuple = ()
     unique: list = []
 
@@ -155,7 +155,6 @@ def find_mode(lst: list[int]) -> tuple[int, ...]:
 #Part 3: Analysis:
 def analysis(fn_in: str, fn_out: str) -> None:
     # intitialize
-    file = open(fn_out, "w")
     tup = load_data(fn_in)
     out: list = []
 
@@ -174,7 +173,6 @@ def analysis(fn_in: str, fn_out: str) -> None:
 
     # save the data and close
     save_data(fn_out, out)
-    file.close()
 
 def main():
     analysis("A14\dataset_3.csv", "A14\out.csv")

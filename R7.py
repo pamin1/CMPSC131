@@ -41,9 +41,7 @@ def find_peaks(lst):
             has_above = i > 0
             has_below = i < len(lst) - 1
             has_left = j > 0
-            has_right = j < len(lst[0]) - 1
-
-            
+            has_right = j < len(lst[0]) - 1       
 
 def main():
     # band_aid([
