@@ -145,27 +145,33 @@ def mark_winner(player: int, cells: set[tuple[int, int]] | None) -> None:
     pass
 
 
-def get_size():
+def get_size() -> list[list]:
+    # user input for size
     size: str = input(f"Size of Board? ")
 
+    # empty strings have defualt sizes
     if size == "":
         print("default size")
         size = 7
 
+    # while loop to continue asking for valid input sizes
     condition: bool = True
     while condition:
         try:
+            # checks if the input is infact an integer
+            # and then checks if it meets the minimum value requirement
             size = int(size)
             if size < 4:
                 print(f"Size must be greater than 4. Try Again: ")
                 size: str = input(f"Size of Board? ")
             else:
+                # valid values will break loop
                 condition = False
-
+        # case for non-integer values
         except ValueError:
             print(f"Size must be an integer. Try Again: ")
             size: str = input(f"Size of Board? ")
-
+    # initializes an empty board list
     board: list = []
     for i in range(size):
         board.append([])
@@ -173,13 +179,19 @@ def get_size():
 
 
 def move(player: int, board: list[list[str]]):
+    # take user input
     move: str = input(f"Player {player} move:")
+
+    # check if it is a valid type
     try:
-        y = int(move)
+        y: int = int(move)
     except ValueError:
         print("invalid move, try again")
         return False
     
+    # check if it is within the board bounds;
+    # adds the player token to the board "row" if valid
+    # otherwise it asks for a new value
     if y >= 0 and y < len(board) and len(board[y]) < len(board):
         board[y].append(PLAYER_MOVES[player][0])
     else:
@@ -189,46 +201,29 @@ def move(player: int, board: list[list[str]]):
 
 
 def full(board: list[list[str]]) -> bool:
-    condition = False
-    count = 0
+    # initialize boolean and integer to keep track of the board size
+    condition: bool = False
+    count: int = 0
+
     for R in range(len(board)):
+        # check if the row is maxed in size
         if len(board[R]) == len(board):
             count +=1
         else:
             count = 0
+    # added 1 for each fill row, if the # of full rows = board size
+    # then the board is fill
     if count == len(board):
         condition = True
     return condition
 
-def connect_four() -> None:
-    board = get_size()
-    render(board, {})
-    while not full(board):
-        for i in range(1,3):
-            temp = move(i, board)
-            while temp == False:
-                temp = move(i, board)
-            winning_set = checker(i, board)
-            render(temp, winning_set)
-            if isinstance(winning_set, set):
-                mark_winner(i, winning_set)
-                print(f'Player {i} wins!')
-                return
-            
-            elif full(board):
-                mark_winner(0, None)
-                print(f'Player 0 wins')
-                return
-            
-        if isinstance(winning_set, set) or full(board):
-            return
-
 
 def checker(player: int, board: list[list[str]]) -> tuple[tuple[int,int]]:
-    char = PLAYER_MOVES[player][0]
-
     # note that each row in the board list represents a column
     
+    # initialize the player token piece
+    char: str = PLAYER_MOVES[player][0]
+
     # checking rows:
     row_out: list = []
     for C in range(len(board)):
@@ -302,6 +297,41 @@ def checker(player: int, board: list[list[str]]) -> tuple[tuple[int,int]]:
             except IndexError:
                 diag_out.clear()
         
+        
+def connect_four() -> None:
+    # initialize board
+    board: list = get_size()
+    render(board, {})
+
+    # keep cycling while the board is not full
+    # referencing the player via integer
+    while not full(board):
+        for i in range(1,3):
+
+            # temp placeholds for the move which can either return the board reference
+            # or return a boolean if the move was invalid
+            temp = move(i, board)
+            while temp == False:
+                temp = move(i, board)
+
+            # checks the board for a winning position
+            winning_set = checker(i, board)
+            render(temp, winning_set)
+
+            #  need to check if the board has a winner or is full and has no winner
+            if isinstance(winning_set, set):
+                mark_winner(i, winning_set)
+                print(f'Player {i} wins!')
+                return
+            
+            elif full(board):
+                mark_winner(0, None)
+                print(f'Player 0 wins')
+                return
+        # final return to break the loop and prevent asking for extraneous inputs  
+        if isinstance(winning_set, set) or full(board):
+            return
+
 
 def main():
     connect_four()
