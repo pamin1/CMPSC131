@@ -149,28 +149,33 @@ def get_size() -> list[list]:
     # user input for size
     size: str = input(f"Size of Board? ")
 
+    condition: bool = True
+
     # empty strings have defualt sizes
-    if size == "":
-        print("default size")
-        size = 7
+
 
     # while loop to continue asking for valid input sizes
-    condition: bool = True
     while condition:
-        try:
-            # checks if the input is infact an integer
-            # and then checks if it meets the minimum value requirement
-            size = int(size)
-            if size < 4:
-                print(f"Size must be greater than 4. Try Again: ")
-                size: str = input(f"Size of Board? ")
-            else:
-                # valid values will break loop
-                condition = False
+        if size == "":
+            print("default size")
+            size = 7
+            condition = False
+        else:
+            try:
+                # checks if the input is infact an integer
+                # and then checks if it meets the minimum value requirement
+                size = int(size)
+                if size < 4:
+                    print(f"Size must be greater than 4. Try Again: ")
+                    size: str = input(f"Size of Board? ")
+                else:
+                    # valid values will break loop
+                    condition = False
         # case for non-integer values
-        except ValueError:
-            print(f"Size must be an integer. Try Again: ")
-            size: str = input(f"Size of Board? ")
+            except ValueError:
+                print(f"Size must be an integer. Try Again: ")
+                size: str = input(f"Size of Board? ")
+
     # initializes an empty board list
     board: list = []
     for i in range(size):
